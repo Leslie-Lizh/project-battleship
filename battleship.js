@@ -1,6 +1,9 @@
 const boardContainer = document.querySelector("#board-container");
 const rotateButton = document.querySelector("#rotate-button");
 const shipCategory = document.querySelector("#ship-category");
+const startButton = document.querySelector("#start-button");
+const progressDisplay = document.querySelector("#progress span");
+const turnDisplay = document.querySelector("#turn span");
 
 // flip the angle of ships from ship-category container when button is clicked
 let angle = 0;
@@ -44,7 +47,7 @@ class ship {
   }
 }
 
-//create new object called ship and assign to each ship name variable
+// create new object called ship and assign to each ship name variable
 const cruiser = new ship(3, "cruiser");
 const destroyer = new ship(4, "destroyer");
 const frigate = new ship(5, "frigate");
@@ -85,7 +88,7 @@ function addShip(ship, user, startIndex) {
     //}
     else {
       validStartNum = startId - ship.length * width + width;
-      // startId - (Math.floor(
+      // validStartNum = startId - (Math.floor(
       //   (startId - (width - ship.length + 1) * width) / width
       // ) +
       //   1) *
@@ -97,12 +100,12 @@ function addShip(ship, user, startIndex) {
   // add ship to the computer board
   for (let i = 0; i < ship.length; i++) {
     if (makeItHorizontal) {
-      shipBlock.push(boardBlocks[Number(validStartNum) + i]); //locate the block with the random start index and as well as its next blocks according to the length property of the ship
+      shipBlock.push(boardBlocks[Number(validStartNum) + i]); // locate the block with the random start index and as well as its next blocks according to the length property of the ship
     } else {
       shipBlock.push(boardBlocks[Number(validStartNum) + i * width]); //locate the block with the random start index and as well as the blocks right next rows according to the length property of the ship
     }
   }
-  console.log(shipBlock);
+  //   console.log(shipBlock);
 
   // this part addresses the issue where horizontal block will flow to the next row
   let validRow;
@@ -144,7 +147,7 @@ ships.forEach((ship) => addShip(ship, "computer"));
 
 // place the ships into player board
 const shipsArray = Array.from(shipCategory.children);
-const allPlayerBlocks = document.querySelectorAll("#player div"); // get all div blocks under the parent div with the id "player"
+const allPlayerBlocks = document.querySelectorAll("#player .game-block"); // get all div blocks under the parent div with the id "player"
 
 // when ship is dragged from the ship-category
 let draggedShip;
@@ -152,7 +155,7 @@ let draggedShip;
 function dragShip(evt) {
   notDropped = false; // this sets the first state of ship notDropped to be false
   draggedShip = evt.target;
-  console.log(draggedShip);
+  //   console.log(draggedShip);
 }
 
 // when ship is dragged into the target, which should be the player board
@@ -162,14 +165,15 @@ function dragOver(evt) {
 
 function placeShip(evt) {
   const startIndex = evt.target.id; // this locates position where the ship block is dropped. e.target.id grabs the id of the div block
-  console.log(startIndex);
+  //   console.log(startIndex);
   const ship = ships[draggedShip.id]; // this tells which ship is dragged
   addShip(ship, "player", startIndex);
   if (!notDropped) {
     // if ship is dropped/placed, remove the ship block from ship-category container
-    draggedShip.remove();
+    draggedShip.remove(); // this will remove the ship from shipCategory div
+    // console.log(shipCategory)
   }
-  console.log(notDropped);
+  //   console.log(notDropped);
 }
 
 shipsArray.forEach((shipArray) =>
@@ -181,3 +185,121 @@ allPlayerBlocks.forEach((playerBlock) => {
   playerBlock.addEventListener("drop", placeShip);
 });
 
+// start the game
+let gameStart;
+let gameOver;
+let playerTurn;
+
+const allComputerBlocks = document.querySelectorAll("#computer .game-block");
+
+function startGame() {
+  if (shipCategory.children.length !== 0) {
+    progressDisplay.innerText =
+      "Please place all your ships before starting the game !";
+  } else if (!gameStart || playerTurn) {
+    gameStart = true;
+    progressDisplay.innerText = "The game has started !";
+
+    allComputerBlocks.forEach((computerBlock) =>
+      computerBlock.addEventListener("click", launchAttack)
+    );
+  }
+  // deactivate the start-game button after the game starts
+  if (gameStart) {
+    startButton.removeEventListener("click", startGame);
+  }
+}
+startButton.addEventListener("click", startGame);
+
+const capturedByPlayer = [];
+const capturedByComputer = [];
+const sunkByPlayer = [];
+const sunkByComputer = [];
+
+function launchAttack(evt) {
+  if (!gameOver) {
+    if (evt.target.classList.contains("occupied")) {
+      evt.target.classList.add("hit");
+      const classes = Array.from(evt.target.classList);
+      const filteredClass = classes.filter(
+        (className) =>
+          className !== "game-block" &&
+          className !== "occupied" &&
+          className !== "hit"
+      );
+      const shipHit = filteredClass.toString();
+      progressDisplay.innerText = `You hit opponent's ${shipHit} !`;
+      // console.log(...filteredClass);
+      capturedByPlayer.push(...filteredClass); // the dote notation removes the array [] and keeps only the contents
+      checkScores("player", capturedByPlayer, sunkByPlayer);
+      //   console.log(capturedByPlayer);
+    } else {
+      progressDisplay.innerText = "You missed !";
+      evt.target.classList.add("not-hit");
+      playerTurn = false;
+      //   allComputerBlocks.forEach((computerBlock) =>
+      //     computerBlock.replaceWith(computerBlock.cloneNode(true))
+      allComputerBlocks.forEach((computerBlock) =>
+        computerBlock.removeEventListener("click", launchAttack)
+      );
+      setTimeout(computerMove, 3000);
+    }
+  }
+}
+
+// Time for the computer's move
+function computerMove() {
+  if (!gameOver) {
+    progressDisplay.innerText = "Opponent is thinking really hard...";
+    turnDisplay.innerText = "Opponent's turn !";
+    setTimeout(() => {
+      let randomMove = Math.floor(Math.random() * width * width);
+      if (
+        allPlayerBlocks[randomMove].classList.contains("occupied") &&
+        !allPlayerBlocks[randomMove].classList.contains("hit")
+      ) {
+        allPlayerBlocks[randomMove].classList.add("hit");
+        const classArr = Array.from(allPlayerBlocks[randomMove].classList);
+        // console.log(classArr);
+        const filteredClassArr = classArr.filter(
+          (className) =>
+            className !== "game-block" &&
+            className !== "occupied" &&
+            className !== "hit"
+        );
+        const shipHits = filteredClassArr.toString();
+        progressDisplay.innerText = `Opponent hits your ${shipHits} !`;
+        capturedByComputer.push(...filteredClassArr);
+        checkScores("computer", capturedByComputer, sunkByComputer);
+        // computerMove();
+        // return;
+      } else if (
+        allPlayerBlocks[randomMove].classList.contains("occupied") &&
+        allPlayerBlocks[randomMove].classList.contains("hit")
+      ) {
+        // give computer another chance due to it's random
+        computerMove();
+        return;
+      } else if (allPlayerBlocks[randomMove].classList.contains("empty")) {
+        // give computer another chance due to it's random
+        computerMove();
+        return;
+      } else {
+        progressDisplay.innerText = "Opponent has missed !";
+        allPlayerBlocks[randomMove].classList.add("not-hit");
+      }
+    }, 3000);
+
+    setTimeout(() => {
+      playerTurn = true;
+      turnDisplay.innerText = "Your turn !";
+      progressDisplay.innerText = "Make your move !";
+      allComputerBlocks.forEach((computerBlock) =>
+        computerBlock.addEventListener("click", launchAttack)
+      );
+    }, 6000);
+  }
+}
+
+// check the score to see if ship sunk or game won
+function checkScores(user, captureByUser, sunkByUser) {}

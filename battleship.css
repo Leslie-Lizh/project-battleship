@@ -16,6 +16,9 @@
 .game-block {
     width: 25px;
     height: 25px;
+    /* width: 24.85px;
+    height: 24.85px;     
+    border: 0.1px dotted black; */
 }
 
 #ship-category {
@@ -91,3 +94,7 @@
 .not-hit {
     background-color: gray;
 }
+
+/* div.game-block:hover {
+    border: 0.01px solid black;
+} */
