@@ -1,0 +1,164 @@
+#intro, #result {
+    background-color: rgba(0, 0, 0, 0.4);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    overflow: auto;
+}
+
+#intro-textbox {
+    background-color: white;
+    height: 350px;
+    width: 550px;
+    border-radius: 2px;
+    margin: 100px auto;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    padding: 2%;
+    line-height: 120%;
+}
+
+#intro-footer {
+    text-align: right;
+}
+
+#close-intro {
+    padding: 14px 18px;
+    background-color: #677996;
+    border: none;
+    outline: none;
+    border-radius: 3px;
+    color: white;
+}
+
+#result-textbox {
+    background-color: white;
+    height: 200px;
+    width: 400px;
+    border-radius: 30px;
+    margin: 150px auto;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    padding: 2%;
+    line-height: 200%;
+    text-align: center;
+}
+
+h2 {
+    padding-bottom: 15px;
+}
+
+#message {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#board-container {
+    width: 550px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 20px auto;
+}
+
+.game-board {
+    width: 250px;
+    height: 250px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.game-block {
+    width: 25px;
+    height: 25px;
+    /* width: 24.85px;
+    height: 24.85px;     
+    border: 0.1px dotted black; */
+}
+
+#ship-category {
+    width: 400px;
+    height: 100px;
+    background-color: bisque;
+    margin: 30px auto;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.button {
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.cruiser {
+    background-color: #4169E1;
+}
+
+.destroyer {
+    background-color: #8A2BE2;
+}
+
+.frigate {
+    background-color: #2E8B57;
+}
+
+.corvette {
+    background-color: #800000;
+}
+
+.submarine {
+    background-color: #C71585;
+}
+
+#computer .cruiser,
+#computer .destroyer,
+#computer .frigate,
+#computer .corvette,
+#computer .submarine {
+    background-color: #7FFFD4;
+}
+
+.cruiser-display {
+    width: 30px;
+    height: 10px;
+    margin: 5px;
+}
+
+.destroyer-display {
+    width: 40px;
+    height: 10px;
+    margin: 5px;
+}
+
+.frigate-display {
+    width: 50px;
+    height: 10px;
+    margin: 5px;
+}
+
+.corvette-display {
+    width: 30px;
+    height: 10px;
+    margin: 5px;
+}
+
+.submarine-display {
+    width: 20px;
+    height: 10px;
+    margin: 5px;
+}
+
+.hit {
+    background-color: red !important;
+}
+
+.not-hit {
+    background-color: gray !important;
+}
+
+/* div.game-block:hover {
+    border: 0.01px solid black;
+} */

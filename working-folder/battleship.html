@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Ocean Battles</title>
+    <link rel="icon" href="assets/battleship.png" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="battleship.css"> 
+    <script src="battleship.js" defer></script>
+</head>
+<body>
+    <dialog id="intro" close>
+        <div id="intro-textbox">
+          <h2>Welcome to Deep Ocean Battles</h2>
+          <p>
+            This is a mini strategic browser game that is PVE. prior to the start of the game, player needs to construct the battleship frontline by dropping different ship (blocks) into the ocean (board). Hint: computer ships are generated at random locations but the patterns are the same as player's.
+          </p>
+          <p>
+            After all ships are deployed, player shall start the game. It will take turns for the player and computer to choose the location on the ocean where they want to launch attack. If any compartment of the opponent's ship is hit, the compartment will show up, you will be given a "small" favor to gain a new turn when you hit a target. Nice?
+          </p>
+          <p>
+            When all compartments of a ship get hit, the ship is sunk. When all your opponent's ships get sunk, woohoo, congrats you have won the game!
+          </p>
+          <div id="intro-footer">
+            <form method="dialog">
+                <button id="close-intro">Close</button>
+            </form>
+          </div>
+        </div>
+      </dialog>
+    <div id="game-info">
+        <p id="turn">This is now: <span></span></p>
+        <p id="progress">Game Progress: <span></span></p>
+    </div>
+    <div id="board-container"></div>
+    <div id="ship-category">
+        <!-- note we want to separate xx-display from xx because former one is the ship display in the parent ship-category container, while later one is the actual ship block shown on the board, they will differ in pixel size -->
+        <div class="cruiser-display cruiser" id="0" draggable="true"></div>
+        <div class="destroyer-display destroyer" id="1" draggable="true"></div>
+        <div class="frigate-display frigate" id="2" draggable="true"></div>
+        <div class="corvette-display corvette" id="3" draggable="true"></div>
+        <div class="submarine-display submarine" id="4" draggable="true"></div>
+    </div>
+    <div class="button">
+        <button id="rotate-button">Rotate</button>
+        <button id="start-button">Start Game</button>
+    </div>
+    <dialog id="result" close>
+        <div id="result-textbox">
+            <p id="message"></p>
+            <p>Refresh the page to start a new game</p>
+            <form method="dialog">
+                <button id="close-result">Close</button>
+            </form>
+        </div>
+    </dialog>
+</body>
+</html>
