@@ -316,16 +316,15 @@ function computerMove() {
         progressDisplay.innerText = "Opponent has missed !";
         allPlayerBlocks[randomMove].classList.add("not-hit");
       }
+      setTimeout(() => {
+        playerTurn = true;
+        turnDisplay.innerText = "Your turn !";
+        progressDisplay.innerText = "Make your move !";
+        allComputerBlocks.forEach((computerBlock) =>
+          computerBlock.addEventListener("click", launchAttack)
+        );
+      }, 3000);
     }, 3000);
-
-    setTimeout(() => {
-      playerTurn = true;
-      turnDisplay.innerText = "Your turn !";
-      progressDisplay.innerText = "Make your move !";
-      allComputerBlocks.forEach((computerBlock) =>
-        computerBlock.addEventListener("click", launchAttack)
-      );
-    }, 6000);
   }
 }
 
@@ -369,7 +368,6 @@ function checkScores(user, captureByUser, sunkByUser) {
   // console.log("user hit", capturedByPlayer);
   // console.log("user sunk", sunkByPlayer);
 }
-
 const openResult = () => {
   result.showModal();
 };

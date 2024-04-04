@@ -10,7 +10,7 @@ const message = document.querySelector("#message");
 
 //load the intro modal dialog few seconds after loading the page
 setTimeout(() => {
-    intro.showModal();
+  intro.showModal();
 }, 2000);
 
 // flip the angle of ships from ship-category container when button is clicked
@@ -207,7 +207,7 @@ function startGame() {
   } else if (!gameStart) {
     gameStart = true;
     progressDisplay.innerText = "The game has started !";
-    turnDisplay.innerText = "You can make the GO first !"
+    turnDisplay.innerText = "You can make the GO first !";
     allComputerBlocks.forEach((computerBlock) =>
       computerBlock.addEventListener("click", launchAttack)
     );
@@ -226,7 +226,10 @@ let sunkByComputer = [];
 
 function launchAttack(evt) {
   if (!gameOver) {
-    if (evt.target.classList.contains("occupied") && !evt.target.classList.contains("hit")) {
+    if (
+      evt.target.classList.contains("occupied") &&
+      !evt.target.classList.contains("hit")
+    ) {
       evt.target.classList.add("hit");
       const classes = Array.from(evt.target.classList);
       const filteredClass = classes.filter(
@@ -241,10 +244,13 @@ function launchAttack(evt) {
       capturedByPlayer.push(...filteredClass); // the dote notation removes the array [] and keeps only the contents
       checkScores("Opponent", capturedByPlayer, sunkByPlayer);
       //   console.log(capturedByPlayer);
-    } else if (evt.target.classList.contains("occupied") && evt.target.classList.contains("hit")) {
-        progressDisplay.innerText = "You missed a chance!";
-        playerTurn = false;
-        allComputerBlocks.forEach((computerBlock) =>
+    } else if (
+      evt.target.classList.contains("occupied") &&
+      evt.target.classList.contains("hit")
+    ) {
+      progressDisplay.innerText = "You missed a chance!";
+      playerTurn = false;
+      allComputerBlocks.forEach((computerBlock) =>
         computerBlock.removeEventListener("click", launchAttack)
       );
       setTimeout(computerMove, 3000);
@@ -293,69 +299,75 @@ function computerMove() {
         allPlayerBlocks[randomMove].classList.contains("hit")
       ) {
         do {
-            computerMove();
-            return;
-        } while (allPlayerBlocks[randomMove].classList.contains("occupied") &&
-        allPlayerBlocks[randomMove].classList.contains("hit"));
+          computerMove();
+          return;
+        } while (
+          allPlayerBlocks[randomMove].classList.contains("occupied") &&
+          allPlayerBlocks[randomMove].classList.contains("hit")
+        );
         // give computer another chance due to it's random
-        
       } else if (allPlayerBlocks[randomMove].classList.contains("empty")) {
         // give computer another chance due to it's random
         do {
-            computerMove();
-            return;
+          computerMove();
+          return;
         } while (allPlayerBlocks[randomMove].classList.contains("empty"));
-        
       } else {
         progressDisplay.innerText = "Opponent has missed !";
         allPlayerBlocks[randomMove].classList.add("not-hit");
       }
+      setTimeout(() => {
+        playerTurn = true;
+        turnDisplay.innerText = "Your turn !";
+        progressDisplay.innerText = "Make your move !";
+        allComputerBlocks.forEach((computerBlock) =>
+          computerBlock.addEventListener("click", launchAttack)
+        );
+      }, 3000);
     }, 3000);
-
-    setTimeout(() => {
-      playerTurn = true;
-      turnDisplay.innerText = "Your turn !";
-      progressDisplay.innerText = "Make your move !";
-      allComputerBlocks.forEach((computerBlock) =>
-        computerBlock.addEventListener("click", launchAttack)
-      );
-    }, 6000);
   }
 }
 
 // check the score to see if ship sunk or game won
 function checkScores(user, captureByUser, sunkByUser) {
-    function checkShips (shipName, shipLength) {
-        if (captureByUser.filter(capturedShip => capturedShip === shipName).length === shipLength) {
-            progressDisplay.innerText = `Woohoo ${user} ${shipName} is sunk !`
-            // this is referring to the player checkscore function, not the computer one 
-            if (user === "Opponent") {
-                capturedByPlayer = captureByUser.filter(capturedShip => capturedShip !== shipName); // retain the ships that does not match with the qualifying ship name (ship that has length condition met)
-            } 
-            // this is referring to the computer checkscore 
-            else if (user === "Your") {
-                capturedByComputer = captureByUser.filter(capturedShip => capturedShip !== shipName);
-            }
-            // this updates the sunkByPlayer or sunkByComputer array
-            sunkByUser.push(shipName);
-        }
-        if (capturedByPlayer.length === 5) {
-            gameOver = true; // stop the game
-            message.innerText = "Congratz, you have won the game !"
-            setTimeout(openResult, 1000);
-        } else if (capturedByComputer.length === 5) {
-            gameOver = true;  // stop the game
-            allComputerBlocks.forEach((computerBlock) =>
-        computerBlock.removeEventListener("click", launchAttack));
-            message.innerText = "What a pity, you have lost !"
-            setTimeout(openResult, 1000);
-        }
+  function checkShips(shipName, shipLength) {
+    if (
+      captureByUser.filter((capturedShip) => capturedShip === shipName)
+        .length === shipLength
+    ) {
+      progressDisplay.innerText = `Woohoo ${user} ${shipName} is sunk !`;
+      // this is referring to the player checkscore function, not the computer one
+      if (user === "Opponent") {
+        capturedByPlayer = captureByUser.filter(
+          (capturedShip) => capturedShip !== shipName
+        ); // retain the ships that does not match with the qualifying ship name (ship that has length condition met)
+      }
+      // this is referring to the computer checkscore
+      else if (user === "Your") {
+        capturedByComputer = captureByUser.filter(
+          (capturedShip) => capturedShip !== shipName
+        );
+      }
+      // this updates the sunkByPlayer or sunkByComputer array
+      sunkByUser.push(shipName);
     }
-    ships.forEach((ship) => checkShips(ship.name, ship.length));
-    // console.log("user hit", capturedByPlayer);
-    // console.log("user sunk", sunkByPlayer);
+    if (capturedByPlayer.length === 5) {
+      gameOver = true; // stop the game
+      message.innerText = "Congratz, you have won the game !";
+      setTimeout(openResult, 1000);
+    } else if (capturedByComputer.length === 5) {
+      gameOver = true; // stop the game
+      allComputerBlocks.forEach((computerBlock) =>
+        computerBlock.removeEventListener("click", launchAttack)
+      );
+      message.innerText = "What a pity, you have lost !";
+      setTimeout(openResult, 1000);
+    }
+  }
+  ships.forEach((ship) => checkShips(ship.name, ship.length));
+  // console.log("user hit", capturedByPlayer);
+  // console.log("user sunk", sunkByPlayer);
 }
-
 const openResult = () => {
-    result.showModal();
-}
+  result.showModal();
+};
