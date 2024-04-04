@@ -1,3 +1,26 @@
+body {
+    background-image: url("../assets/seawar.gif");
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+.start-page {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 50px;
+    margin-top: 200px;
+}
+
+.start-page button {
+    cursor: pointer;
+}
+
+.game-page {
+    display: none;
+}
+
 #intro, #result {
     background-color: rgba(0, 0, 0, 0.4);
     position: fixed;
@@ -72,9 +95,6 @@ h2 {
 .game-block {
     width: 25px;
     height: 25px;
-    /* width: 24.85px;
-    height: 24.85px;     
-    border: 0.1px dotted black; */
 }
 
 #ship-category {
@@ -159,6 +179,3 @@ h2 {
     background-color: gray !important;
 }
 
-/* div.game-block:hover {
-    border: 0.01px solid black;
-} */
