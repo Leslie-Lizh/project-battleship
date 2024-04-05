@@ -1,3 +1,6 @@
+const startPage = document.querySelector(".start-page");
+const exploreButton = document.querySelector(".start-page button");
+const gamePage = document.querySelector(".game-page");
 const intro = document.querySelector("#intro");
 const boardContainer = document.querySelector("#board-container");
 const rotateButton = document.querySelector("#rotate-button");
@@ -8,10 +11,14 @@ const turnDisplay = document.querySelector("#turn span");
 const result = document.querySelector("#result");
 const message = document.querySelector("#message");
 
-//load the intro modal dialog few seconds after loading the page
-setTimeout(() => {
-  intro.showModal();
-}, 2000);
+function startExplore() {
+  gamePage.style.display = "block";
+  startPage.style.display = "none";
+  setTimeout(() => {
+    intro.showModal();
+  }, 2000);
+}
+exploreButton.addEventListener("click", startExplore);
 
 // flip the angle of ships from ship-category container when button is clicked
 let angle = 0;
@@ -171,12 +178,15 @@ function dragOver(evt) {
   evt.preventDefault();
 }
 
+let removedShip = [];
 function placeShip(evt) {
   const startIndex = evt.target.id; // this locates position where the ship block is dropped. e.target.id grabs the id of the div block
   //   console.log(startIndex);
   const ship = ships[draggedShip.id]; // this tells which ship is dragged
   addShip(ship, "player", startIndex);
   if (!notDropped) {
+    removedShip.push(draggedShip);
+    // console.log(removedShip);
     // if ship is dropped/placed, remove the ship block from ship-category container
     draggedShip.remove(); // this will remove the ship from shipCategory div
     // console.log(shipCategory)
@@ -306,12 +316,12 @@ function computerMove() {
           allPlayerBlocks[randomMove].classList.contains("hit")
         );
         // give computer another chance due to it's random
-      } else if (allPlayerBlocks[randomMove].classList.contains("empty")) {
+      } else if (allPlayerBlocks[randomMove].classList.contains("not-hit")) {
         // give computer another chance due to it's random
         do {
           computerMove();
           return;
-        } while (allPlayerBlocks[randomMove].classList.contains("empty"));
+        } while (allPlayerBlocks[randomMove].classList.contains("not-hit"));
       } else {
         progressDisplay.innerText = "Opponent has missed !";
         allPlayerBlocks[randomMove].classList.add("not-hit");
@@ -327,6 +337,9 @@ function computerMove() {
     }, 3000);
   }
 }
+
+const newButton = document.querySelector("#new-button");
+let resetGame;
 
 // check the score to see if ship sunk or game won
 function checkScores(user, captureByUser, sunkByUser) {
@@ -355,6 +368,8 @@ function checkScores(user, captureByUser, sunkByUser) {
       gameOver = true; // stop the game
       message.innerText = "Congratz, you have won the game !";
       setTimeout(openResult, 1000);
+      newButton.addEventListener("click", newGame);
+      resetGame = true;
     } else if (sunkByComputer.length === 5) {
       gameOver = true; // stop the game
       allComputerBlocks.forEach((computerBlock) =>
@@ -362,6 +377,8 @@ function checkScores(user, captureByUser, sunkByUser) {
       );
       message.innerText = "What a pity, you have lost !";
       setTimeout(openResult, 1000);
+      newButton.addEventListener("click", newGame);
+      resetGame = true;
     }
   }
   ships.forEach((ship) => checkShips(ship.name, ship.length));
@@ -371,3 +388,36 @@ function checkScores(user, captureByUser, sunkByUser) {
 const openResult = () => {
   result.showModal();
 };
+
+function newGame() {
+  if (resetGame) {
+    const classToRemove = [
+      "occupied",
+      "hit",
+      "not-hit",
+      "cruiser",
+      "destroyer",
+      "frigate",
+      "corvette",
+      "submarine",
+    ];
+    allPlayerBlocks.forEach((block) =>
+      block.classList.remove(...classToRemove)
+    );
+    allComputerBlocks.forEach((block) =>
+      block.classList.remove(...classToRemove)
+    );
+    removedShip.forEach((ship) => shipCategory.append(ship));
+    ships.forEach((ship) => addShip(ship, "computer"));
+    gameStart = false;
+    gameOver = false;
+    progressDisplay.innerText = "";
+    turnDisplay.innerText = "";
+    capturedByPlayer = [];
+    capturedByComputer = [];
+    sunkByPlayer = [];
+    sunkByComputer = [];
+    startButton.addEventListener("click", startGame);
+  }
+  resetGame = false;
+}
