@@ -11,6 +11,14 @@ const turnDisplay = document.querySelector("#turn span");
 const result = document.querySelector("#result");
 const message = document.querySelector("#message");
 
+// adding some audio element for the attacking sound effect
+function playAudio(src) {
+  const audioEffect = new Audio(src);
+  audioEffect.volume = 0.3;
+  audioEffect.play();
+}
+
+// adding a start page
 function startExplore() {
   gamePage.style.display = "block";
   startPage.style.display = "none";
@@ -181,7 +189,7 @@ function dragOver(evt) {
 let removedShip = [];
 function placeShip(evt) {
   const startIndex = evt.target.id; // this locates position where the ship block is dropped. e.target.id grabs the id of the div block
-  //   console.log(startIndex);
+  console.log(startIndex);
   const ship = ships[draggedShip.id]; // this tells which ship is dragged
   addShip(ship, "player", startIndex);
   if (!notDropped) {
@@ -252,6 +260,7 @@ function launchAttack(evt) {
       progressDisplay.innerText = `You hit opponent's ${shipHit} !`;
       // console.log(...filteredClass);
       capturedByPlayer.push(...filteredClass); // the dote notation removes the array [] and keeps only the contents
+      playAudio("../assets/boom-firing.mp3");
       checkScores("Opponent", capturedByPlayer, sunkByPlayer);
       //   console.log(capturedByPlayer);
     } else if (
@@ -260,6 +269,7 @@ function launchAttack(evt) {
     ) {
       progressDisplay.innerText = "You missed a chance!";
       playerTurn = false;
+      playAudio("../assets/water-splash.mp3");
       allComputerBlocks.forEach((computerBlock) =>
         computerBlock.removeEventListener("click", launchAttack)
       );
@@ -268,6 +278,7 @@ function launchAttack(evt) {
       progressDisplay.innerText = "You missed !";
       evt.target.classList.add("not-hit");
       playerTurn = false;
+      playAudio("../assets/water-splash.mp3");
       //   allComputerBlocks.forEach((computerBlock) =>
       //     computerBlock.replaceWith(computerBlock.cloneNode(true))
       allComputerBlocks.forEach((computerBlock) =>
@@ -301,9 +312,8 @@ function computerMove() {
         const shipHits = filteredClassArr.toString();
         progressDisplay.innerText = `Opponent hits your ${shipHits} !`;
         capturedByComputer.push(...filteredClassArr);
+        playAudio("../assets/boom-firing.mp3");
         checkScores("Your", capturedByComputer, sunkByComputer);
-        // computerMove();
-        // return;
       } else if (
         allPlayerBlocks[randomMove].classList.contains("occupied") &&
         allPlayerBlocks[randomMove].classList.contains("hit")
@@ -325,6 +335,7 @@ function computerMove() {
       } else {
         progressDisplay.innerText = "Opponent has missed !";
         allPlayerBlocks[randomMove].classList.add("not-hit");
+        playAudio("../assets/water-splash.mp3");
       }
       setTimeout(() => {
         playerTurn = true;

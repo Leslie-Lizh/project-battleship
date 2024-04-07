@@ -1,3 +1,5 @@
+// DOM
+// ---------------------------------------------------------
 const startPage = document.querySelector(".start-page");
 const exploreButton = document.querySelector(".start-page button");
 const gamePage = document.querySelector(".game-page");
@@ -10,49 +12,23 @@ const progressDisplay = document.querySelector("#progress span");
 const turnDisplay = document.querySelector("#turn span");
 const result = document.querySelector("#result");
 const message = document.querySelector("#message");
+const newButton = document.querySelector("#new-button");
 
-function startExplore() {
-  gamePage.style.display = "block";
-  startPage.style.display = "none";
-  setTimeout(() => {
-    intro.showModal();
-  }, 2000);
-}
-exploreButton.addEventListener("click", startExplore);
-
-// flip the angle of ships from ship-category container when button is clicked
+// Variables, Objects and Arrays
+// ---------------------------------------------------------
 let angle = 0;
-function rotate() {
-  const shipsArray = Array.from(shipCategory.children);
-  if (angle === 0) {
-    angle = 90;
-  } else {
-    angle = 0;
-  }
-  for (let i = 0; i < shipsArray.length; i++) {
-    shipsArray[i].style.transform = `rotate(${angle}deg)`;
-  }
-}
-rotateButton.addEventListener("click", rotate);
-
-// create player and computer boards
 const width = 10; // arbituary size of each grid box on the board
-function createBoard(color, user) {
-  const gameBoard = document.createElement("div");
-  gameBoard.classList.add("game-board");
-  gameBoard.setAttribute("id", `${user}`);
-  gameBoard.style.backgroundColor = color;
+let notDropped;
+let draggedShip; // when ship is dragged from the ship-category
 
-  for (let i = 0; i < width * width; i++) {
-    const gameBlock = document.createElement("div");
-    gameBlock.classList.add("game-block");
-    gameBlock.setAttribute("id", `${i}`);
-    gameBoard.appendChild(gameBlock);
-  }
-  boardContainer.appendChild(gameBoard);
-}
-createBoard("#00FFFF", "player");
-createBoard("#7FFFD4", "computer");
+// for starting the game
+let gameStart;
+let gameOver;
+let playerTurn;
+let resetGame;
+
+// for placing the ships into player board
+const shipsArray = Array.from(shipCategory.children);
 
 // create ships by class
 class ship {
@@ -72,7 +48,60 @@ const submarine = new ship(2, "submarine");
 // store each ship object as an item in the ships array
 const ships = [cruiser, destroyer, frigate, corvette, submarine];
 
-let notDropped;
+// to store the ships when they are removed from ship-category after drag-and-drop
+let removedShip = [];
+
+// to store the ship name when it is hit or sunk
+let capturedByPlayer = [];
+let capturedByComputer = [];
+let sunkByPlayer = [];
+let sunkByComputer = [];
+
+// Functions
+// ---------------------------------------------------------
+// adding some audio element for the attacking sound effect
+function playAudio(src) {
+  const audioEffect = new Audio(src);
+  audioEffect.volume = 0.3;
+  audioEffect.play();
+}
+
+// adding a start page
+function startExplore() {
+  gamePage.style.display = "block";
+  startPage.style.display = "none";
+  setTimeout(() => {
+    intro.showModal();
+  }, 2000);
+}
+
+// flip the angle of ships from ship-category container when button is clicked
+function rotate() {
+  if (angle === 0) {
+    angle = 90;
+  } else {
+    angle = 0;
+  }
+  for (let i = 0; i < shipsArray.length; i++) {
+    shipsArray[i].style.transform = `rotate(${angle}deg)`;
+  }
+}
+
+// create player and computer boards
+function createBoard(color, user) {
+  const gameBoard = document.createElement("div");
+  gameBoard.classList.add("game-board");
+  gameBoard.setAttribute("id", `${user}`);
+  gameBoard.style.backgroundColor = color;
+
+  for (let i = 0; i < width * width; i++) {
+    const gameBlock = document.createElement("div");
+    gameBlock.classList.add("game-block");
+    gameBlock.setAttribute("id", `${i}`);
+    gameBoard.appendChild(gameBlock);
+  }
+  boardContainer.appendChild(gameBoard);
+}
 
 // add the ship blocks to the computer board
 function addShip(ship, user, startIndex) {
@@ -82,7 +111,6 @@ function addShip(ship, user, startIndex) {
   let randomBoolean = Math.random() > 0.5;
   // check if the user is computer, if not, horizontal or not will depend on the angle of the ship block inside ship-category
   let makeItHorizontal = user === "computer" ? randomBoolean : angle === 0;
-
   let startId = startIndex ? startIndex : randomStartNum;
 
   // this addresses the issue where ship is generated outside the board - invalid starting point
@@ -98,16 +126,8 @@ function addShip(ship, user, startIndex) {
     // check if ship is generated non-horizontally/vertically
     if (startId <= width * width - ship.length * width) {
       validStartNum = startId;
-    } //else if (startId === width*width - ship.length*width + width) {
-    //validStartNum = startId - width;
-    //}
-    else {
+    } else {
       validStartNum = startId - ship.length * width + width;
-      // validStartNum = startId - (Math.floor(
-      //   (startId - (width - ship.length + 1) * width) / width
-      // ) +
-      //   1) *
-      //   width;
     }
   }
 
@@ -120,7 +140,6 @@ function addShip(ship, user, startIndex) {
       shipBlock.push(boardBlocks[Number(validStartNum) + i * width]); //locate the block with the random start index and as well as the blocks right next rows according to the length property of the ship
     }
   }
-  //   console.log(shipBlock);
 
   // this part addresses the issue where horizontal block will flow to the next row
   let validRow;
@@ -157,20 +176,10 @@ function addShip(ship, user, startIndex) {
     }
   }
 }
-// call the addShip function for each ship in the ships array to randomly add ship to the computer board, omit the startIndex parameter
-ships.forEach((ship) => addShip(ship, "computer"));
-
-// place the ships into player board
-const shipsArray = Array.from(shipCategory.children);
-const allPlayerBlocks = document.querySelectorAll("#player .game-block"); // get all div blocks under the parent div with the id "player"
-
-// when ship is dragged from the ship-category
-let draggedShip;
 
 function dragShip(evt) {
   notDropped = false; // this sets the first state of ship notDropped to be false
   draggedShip = evt.target;
-  //   console.log(draggedShip);
 }
 
 // when ship is dragged into the target, which should be the player board
@@ -178,37 +187,16 @@ function dragOver(evt) {
   evt.preventDefault();
 }
 
-let removedShip = [];
 function placeShip(evt) {
   const startIndex = evt.target.id; // this locates position where the ship block is dropped. e.target.id grabs the id of the div block
-  //   console.log(startIndex);
   const ship = ships[draggedShip.id]; // this tells which ship is dragged
   addShip(ship, "player", startIndex);
   if (!notDropped) {
     removedShip.push(draggedShip);
-    // console.log(removedShip);
     // if ship is dropped/placed, remove the ship block from ship-category container
-    draggedShip.remove(); // this will remove the ship from shipCategory div
-    // console.log(shipCategory)
+    draggedShip.remove();
   }
-  //   console.log(notDropped);
 }
-
-shipsArray.forEach((shipArray) =>
-  shipArray.addEventListener("dragstart", dragShip)
-);
-
-allPlayerBlocks.forEach((playerBlock) => {
-  playerBlock.addEventListener("dragover", dragOver);
-  playerBlock.addEventListener("drop", placeShip);
-});
-
-// start the game
-let gameStart;
-let gameOver;
-let playerTurn;
-
-const allComputerBlocks = document.querySelectorAll("#computer .game-block");
 
 function startGame() {
   if (shipCategory.children.length !== 0) {
@@ -227,12 +215,6 @@ function startGame() {
     startButton.removeEventListener("click", startGame);
   }
 }
-startButton.addEventListener("click", startGame);
-
-let capturedByPlayer = [];
-let capturedByComputer = [];
-let sunkByPlayer = [];
-let sunkByComputer = [];
 
 function launchAttack(evt) {
   if (!gameOver) {
@@ -250,16 +232,16 @@ function launchAttack(evt) {
       );
       const shipHit = filteredClass.toString();
       progressDisplay.innerText = `You hit opponent's ${shipHit} !`;
-      // console.log(...filteredClass);
       capturedByPlayer.push(...filteredClass); // the dote notation removes the array [] and keeps only the contents
+      playAudio("assets/boom-firing.mp3");
       checkScores("Opponent", capturedByPlayer, sunkByPlayer);
-      //   console.log(capturedByPlayer);
     } else if (
       evt.target.classList.contains("occupied") &&
       evt.target.classList.contains("hit")
     ) {
       progressDisplay.innerText = "You missed a chance!";
       playerTurn = false;
+      playAudio("assets/water-splash.mp3");
       allComputerBlocks.forEach((computerBlock) =>
         computerBlock.removeEventListener("click", launchAttack)
       );
@@ -268,8 +250,7 @@ function launchAttack(evt) {
       progressDisplay.innerText = "You missed !";
       evt.target.classList.add("not-hit");
       playerTurn = false;
-      //   allComputerBlocks.forEach((computerBlock) =>
-      //     computerBlock.replaceWith(computerBlock.cloneNode(true))
+      playAudio("assets/water-splash.mp3");
       allComputerBlocks.forEach((computerBlock) =>
         computerBlock.removeEventListener("click", launchAttack)
       );
@@ -291,7 +272,6 @@ function computerMove() {
       ) {
         allPlayerBlocks[randomMove].classList.add("hit");
         const classArr = Array.from(allPlayerBlocks[randomMove].classList);
-        // console.log(classArr);
         const filteredClassArr = classArr.filter(
           (className) =>
             className !== "game-block" &&
@@ -301,9 +281,8 @@ function computerMove() {
         const shipHits = filteredClassArr.toString();
         progressDisplay.innerText = `Opponent hits your ${shipHits} !`;
         capturedByComputer.push(...filteredClassArr);
+        playAudio("assets/boom-firing.mp3");
         checkScores("Your", capturedByComputer, sunkByComputer);
-        // computerMove();
-        // return;
       } else if (
         allPlayerBlocks[randomMove].classList.contains("occupied") &&
         allPlayerBlocks[randomMove].classList.contains("hit")
@@ -325,6 +304,7 @@ function computerMove() {
       } else {
         progressDisplay.innerText = "Opponent has missed !";
         allPlayerBlocks[randomMove].classList.add("not-hit");
+        playAudio("assets/water-splash.mp3");
       }
       setTimeout(() => {
         playerTurn = true;
@@ -337,9 +317,6 @@ function computerMove() {
     }, 3000);
   }
 }
-
-const newButton = document.querySelector("#new-button");
-let resetGame;
 
 // check the score to see if ship sunk or game won
 function checkScores(user, captureByUser, sunkByUser) {
@@ -382,9 +359,8 @@ function checkScores(user, captureByUser, sunkByUser) {
     }
   }
   ships.forEach((ship) => checkShips(ship.name, ship.length));
-  // console.log("user hit", capturedByPlayer);
-  // console.log("user sunk", sunkByPlayer);
 }
+
 const openResult = () => {
   result.showModal();
 };
@@ -421,3 +397,31 @@ function newGame() {
   }
   resetGame = false;
 }
+
+// Event Listeners and function calling
+// ---------------------------------------------------------
+exploreButton.addEventListener("click", startExplore);
+rotateButton.addEventListener("click", rotate);
+
+// generate game boards
+createBoard("#00FFFF", "player");
+createBoard("#7FFFD4", "computer");
+
+//this is here because they only valid after the board is generated
+const allPlayerBlocks = document.querySelectorAll("#player .game-block");
+const allComputerBlocks = document.querySelectorAll("#computer .game-block");
+
+// call the addShip function for each ship in the ships array to randomly add ship to the computer board, omit the startIndex parameter
+ships.forEach((ship) => addShip(ship, "computer"));
+
+// for drag events
+shipsArray.forEach((shipArray) =>
+  shipArray.addEventListener("dragstart", dragShip)
+);
+
+allPlayerBlocks.forEach((playerBlock) => {
+  playerBlock.addEventListener("dragover", dragOver);
+  playerBlock.addEventListener("drop", placeShip);
+});
+
+startButton.addEventListener("click", startGame);
